@@ -4,6 +4,9 @@
 ---@field gridY number
 local Coordinate = {}
 Coordinate.__index = Coordinate
+Coordinate.__eq = function (a, b)
+    return (a.gridX == b.gridX) and (a.gridY == b.gridY)
+end
 
 ---@param gridX number
 ---@param gridY number
