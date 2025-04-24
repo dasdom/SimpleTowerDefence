@@ -21,7 +21,7 @@ local Coordinate = require("coordinate")
 local Tower = {}
 Tower.__index = Tower
 
-function Tower:new(name, coordinate, towerType)
+function Tower.new(name, coordinate, towerType)
     local self = setmetatable({}, Tower)
     self.name = name
     self.coordinate = coordinate
