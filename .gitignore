@@ -1,0 +1,52 @@
+# Compiled Lua sources
+luac.out
+*.o
+*.so
+*.a
+
+# Compiled LÖVE game files
+*.love
+
+# Lua package manager (LuaRocks)
+*.rock
+.luarocks/
+
+# Object files
+*.os
+
+# Editor and IDE files
+.vscode/*
+!.vscode/launch.json
+!.vscode/tasks.json
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.sublime-project
+*.sublime-workspace
+.atom/
+*.swp
+*.swo
+
+# OS generated files
+## macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Icon?
+ehthumbs.db
+Thumbs.db
+
+## Windows
+desktop.ini
+$RECYCLE.BIN/
+
+## Linux
+*~
+
+# Project-specific files
+config.lua.local
+saves/
+build/
+dist/
