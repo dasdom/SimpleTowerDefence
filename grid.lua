@@ -10,61 +10,70 @@ local Grid = {}
 Grid.__index = Grid
 
 function Grid.new(numberOfRows, numberOfColumns)
-	local self = setmetatable({}, Grid)
-	self.numberOfRows = numberOfRows
-	self.numberOfColumns = numberOfColumns
+  local self = setmetatable({}, Grid)
+  self.numberOfRows = numberOfRows
+  self.numberOfColumns = numberOfColumns
 
-    self.towers = {}
+  local towers = {}
+  for y = 1, numberOfRows do
+    towers[y] = {}
+    for x = 1, numberOfColumns do
+      towers[y][x] = false
+    end
+  end
 
-    local coordinate = Coordinate.new(3, 5)
-    local tower = Tower.new(coordinate, "fire")
-    table.insert(self.towers, { coordinate = tower })
-    print(self.towers)
+  -- Temporary
+  local coordinate = Coordinate.new(3, 5)
+  local tower = Tower.new(coordinate, "fire")
+  towers[coordinate.gridY][coordinate.gridX] = tower
 
-	return self
+  self.towers = towers
+
+  print(self.towers[3][5])
+
+  return self
 end
 
 -- love methods
 
 function Grid:draw()
 
-	love.graphics.setColor(Colors.gridBackround)
-	love.graphics.rectangle("fill", 0, 0, love.graphics.getWidth(), love.graphics.getHeight())
+  love.graphics.setColor(Colors.gridBackround)
+  love.graphics.rectangle("fill", 0, 0, love.graphics.getWidth(), love.graphics.getHeight())
 
-	local gridHeight = love.graphics.getHeight() - 200
+  local gridHeight = love.graphics.getHeight() - 200
 
-	local gridItemWidth = love.graphics.getWidth() / self.numberOfColumns
-	local gridItemHeight = gridHeight / self.numberOfRows
+  local gridItemWidth = love.graphics.getWidth() / self.numberOfColumns
+  local gridItemHeight = gridHeight / self.numberOfRows
 
-	for row = 0, self.numberOfRows - 1 do
-		for column = 0, self.numberOfColumns - 1 do
-            local coordinate = Coordinate.new(column, row)
-            local tower = self.towers[coordinate]
-            if tower then
-                love.graphics.setColor(1, 0, 0)   
-            else
-	            love.graphics.setColor(Colors.gridItem)
-            end
-			local x = column * gridItemWidth
-			local y = row * gridItemHeight
-			love.graphics.rectangle("fill", x, y, gridItemWidth - 2, gridItemHeight - 2)
-		end
-	end
+  for row = 1, self.numberOfRows do
+    for column = 1, self.numberOfColumns do
+      local tower = self.towers[row][column]
+      if tower then
+        love.graphics.setColor(1, 0, 0)   
+      else
+        love.graphics.setColor(Colors.gridItem)
+      end
+      local x = (column - 1) * gridItemWidth
+      local y = (row - 1)* gridItemHeight
+      love.graphics.rectangle("fill", x, y, gridItemWidth - 2, gridItemHeight - 2)
+    end
+  end
 end
 
 -- class methods
 
 function Grid:addTower(tower)
-	table.insert(self.towers, tower)
+  table.insert(self.towers, tower)
 end
 
 function Grid:removeTower(towerToRemove)
-	for tower in self.towers do
-		if tower.coordinate == towerToRemove.coordinate then
-			table.remove(towerToRemove)
-			break
-		end
-	end
+  for tower in self.towers do
+    if tower.coordinate == towerToRemove.coordinate then
+      table.remove(towerToRemove)
+      break
+    end
+  end
 end
 
 return Grid
