@@ -3,34 +3,33 @@ local Coordinate = require("coordinate")
 local Tower = require("tower")
 
 ---@class Grid
+---@field width number
+---@field height number
 ---@field numberOfRows number
 ---@field numberOfColumns number
 ---@field towers table<Coordinate, Tower>
 local Grid = {}
 Grid.__index = Grid
 
-function Grid.new(numberOfRows, numberOfColumns)
+function Grid.new(width, height, numberOfRows, numberOfColumns)
   local self = setmetatable({}, Grid)
+  self.width = width
+  self.height = height
   self.numberOfRows = numberOfRows
   self.numberOfColumns = numberOfColumns
 
   self.towers = {}
-  local coordinate = Coordinate.new(3, 5)
-  local tower = Tower.new(coordinate, "fire")
-  self.towers[coordinate:key()] = tower
+--  local coordinate = Coordinate.new(3, 5)
+--  local tower = Tower.new(coordinate, "fire")
+--  self.towers[coordinate:key()] = tower
   return self
 end
 
 -- love methods
 
 function Grid:draw()
-  love.graphics.setColor(Colors.gridBackround)
-  love.graphics.rectangle("fill", 0, 0, love.graphics.getWidth(), love.graphics.getHeight())
-
-  local gridHeight = love.graphics.getHeight() - 200
-
-  local gridItemWidth = love.graphics.getWidth() / self.numberOfColumns
-  local gridItemHeight = gridHeight / self.numberOfRows
+  local gridItemWidth = self.width / self.numberOfColumns
+  local gridItemHeight = self.height / self.numberOfRows
 
   for row = 1, self.numberOfRows do
     for column = 1, self.numberOfColumns do
@@ -76,9 +75,8 @@ function Grid:removeTower(towerToRemove)
 end
 
 function Grid:coordinateFor(x, y)
-  local gridHeight = love.graphics.getHeight() - 200
-  local gridItemWidth = love.graphics.getWidth() / self.numberOfColumns
-  local gridItemHeight = gridHeight / self.numberOfRows
+  local gridItemWidth = self.width / self.numberOfColumns
+  local gridItemHeight = self.height / self.numberOfRows
 
   local column = math.floor(x / gridItemWidth + 1)
   local row = math.floor(y / gridItemHeight + 1)

@@ -1,4 +1,5 @@
 local Grid = require("grid")
+local Colors = require("ui/colors")
 
 ---@class Game
 ---@field grid Grid
@@ -8,7 +9,9 @@ Game.__index = Game
 
 function Game.new()
 	local self = setmetatable({}, Game)
-	self.grid = Grid.new(10, 20)
+  local width = love.graphics.getWidth()
+  local height = love.graphics.getHeight()
+	self.grid = Grid.new(width, height - 200, 10, 20)
 	self.buttons = {}
 
 	return self
@@ -19,6 +22,9 @@ function Game:update()
 end
 
 function Game:draw()
+  love.graphics.setColor(Colors.gridBackround)
+  love.graphics.rectangle("fill", 0, 0, love.graphics.getWidth(), love.graphics.getHeight())
+
 	self.grid:draw()
 end
 
