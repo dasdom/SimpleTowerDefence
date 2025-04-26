@@ -1,9 +1,15 @@
 WINDOW_WIDTH = 800
 WINDOW_HEIGHT = 600
 
-local button = require("ui.components.button")
+STATES = {
+	GAME = "game",
+}
 
-Button = {}
+local Button = require("ui.components.button")
+local Game = require("game")
+
+local game = {}
+local state = STATES.GAME
 
 function love.load()
 	love.window.setTitle("Tower Defence")
@@ -15,29 +21,23 @@ function love.load()
 		minheight = 400,
 	})
 
-	Button = button.new("Start Game", 100, 100, 200, 50, function()
-		print("Start Game button clicked!")
-	end)
+	game = Game.new()
 end
 
 function love.update(_)
-	-- Update game logic here
+	if state == STATES.GAME then
+		game:update()
+	end
 end
 
 function love.draw()
-	-- Draw game elements here
-	love.graphics.setColor(0.8, 0.8, 0.8, 1)
-	love.graphics.print("Hello, Tower Defence!", 100, 100)
-
-	Button:draw()
+	if state == STATES.GAME then
+		game:draw()
+	end
 end
 
 function love.mousepressed(x, y, mbutton)
-	if mbutton ~= 1 then
-		return
-	end
-
-	if x >= Button.x and x <= Button.x + Button.width and y >= Button.y and y <= Button.y + Button.height then
-		Button.action()
+	if state == STATES.GAME then
+		game:mousepressed(x, y, mbutton)
 	end
 end

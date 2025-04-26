@@ -9,6 +9,8 @@ local baseColors = {
 local Colors = {
 	buttonBackground = baseColors.gunmetal,
 	buttonText = baseColors.aureolin,
+	gridBackround = baseColors.blackBean,
+	gridItem = baseColors.frenchGray,
 }
 
 return Colors
