@@ -49,6 +49,12 @@ end
 
 -- class methods
 
+function Grid:addTowerAt(x, y)
+  local coordinate = self:coordinateFor(x, y)
+  local tower = Tower.new(coordinate, "fire")
+  self:addTower(tower)
+end
+
 function Grid:addTower(tower)
   self.towers[tower.coordinate:key()] = tower
 end
@@ -67,6 +73,16 @@ function Grid:removeTower(towerToRemove)
       break
     end
   end
+end
+
+function Grid:coordinateFor(x, y)
+  local gridHeight = love.graphics.getHeight() - 200
+  local gridItemWidth = love.graphics.getWidth() / self.numberOfColumns
+  local gridItemHeight = gridHeight / self.numberOfRows
+
+  local column = math.floor(x / gridItemWidth + 1)
+  local row = math.floor(y / gridItemHeight + 1)
+  return Coordinate.new(column, row)
 end
 
 return Grid

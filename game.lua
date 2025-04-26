@@ -22,6 +22,8 @@ function Game:draw()
 	self.grid:draw()
 end
 
-function Game:mousepressed(x, y, mbutton) end
+function Game:mousepressed(x, y, mbutton) 
+  self.grid:addTowerAt(x, y)
+end
 
 return Game
