@@ -1,4 +1,4 @@
-local Colors = require("ui/colors")
+local Colors = require("ui.colors")
 local Coordinate = require("coordinate")
 local Tower = require("tower")
 
@@ -19,9 +19,6 @@ function Grid.new(width, height, numberOfRows, numberOfColumns)
   self.numberOfColumns = numberOfColumns
 
   self.towers = {}
---  local coordinate = Coordinate.new(3, 5)
---  local tower = Tower.new(coordinate, "fire")
---  self.towers[coordinate:key()] = tower
   return self
 end
 
