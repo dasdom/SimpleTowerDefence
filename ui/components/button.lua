@@ -33,6 +33,12 @@ function Button:draw()
   local x, y = love.mouse.getPosition()
   local isHover = self:contains(x, y)
 
+  -- Draw shadow
+  if not isHover then
+    love.graphics.setColor(0, 0, 0, 0.3)
+    love.graphics.rectangle("fill", self.x + 4, self.y + 4, self.width, self.height)
+  end
+
   -- Draw button background and text
   if isHover then
     love.graphics.setColor(Colors.buttonBackgroundHover)
