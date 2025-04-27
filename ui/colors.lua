@@ -7,7 +7,14 @@ local baseColors = {
 }
 
 local Colors = {
-  buttonBackground = baseColors.blackBean,
+  buttonBackgroundActive = baseColors.blackBean,
+  buttonBackgroundHover = {
+    baseColors.blackBean[1] * 0.9,
+    baseColors.blackBean[2] * 0.9,
+    baseColors.blackBean[3] * 0.9,
+    baseColors.blackBean[4],
+  },
+  buttonBorder = baseColors.lapisLazuli,
   buttonText = baseColors.aureolin,
   gridBackround = baseColors.blackBean,
   gridItem = baseColors.frenchGray,
