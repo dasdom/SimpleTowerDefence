@@ -1,16 +1,25 @@
 local baseColors = {
-	blackBean = { 0.2156, 0.0588, 0.0235, 1 },
-	frenchGray = { 0.7922, 0.7647, 0.8078, 1 },
-	aureolin = { 0.9765, 0.9529, 0.1686, 1 },
-	gunmetal = { 0.0980, 0.1961, 0.2353, 1 },
-	lapisLazuli = { 0.1686, 0.5294, 0.4824, 1 },
+  blackBean = { 0.21568627450980393, 0.21568627450980393, 0.023529411764705882, 1 },
+  frenchGray = { 0.792156862745098, 0.7686274509803922, 0.7686274509803922, 1 },
+  aureolin = { 0.9725490196078431, 0.9529411764705882, 0.16862745098039217, 1 },
+  gunmetal = { 0.09803921568627451, 0.19607843137254902, 0.23529411764705882, 1 },
+  lapisLazuli = { 0.1568627450980392, 0.34509803921568627, 0.4823529411764706, 1 },
 }
 
 local Colors = {
-	buttonBackground = baseColors.gunmetal,
-	buttonText = baseColors.aureolin,
-	gridBackround = baseColors.blackBean,
-	gridItem = baseColors.frenchGray,
+  buttonBackgroundActive = baseColors.blackBean,
+  buttonBackgroundHover = {
+    baseColors.blackBean[1] * 0.9,
+    baseColors.blackBean[2] * 0.9,
+    baseColors.blackBean[3] * 0.9,
+    baseColors.blackBean[4],
+  },
+  buttonBorder = baseColors.lapisLazuli,
+  buttonText = baseColors.aureolin,
+  gridBackround = baseColors.blackBean,
+  gridItem = baseColors.frenchGray,
+  mainMenuBackground = baseColors.gunmetal,
+  mainMenuFontColor = baseColors.aureolin,
 }
 
 return Colors
