@@ -1,4 +1,5 @@
 -- Coordinate in grid
+-- This module defines a Coordinate class that represents a field in a grid.
 ---@class Coordinate
 ---@field gridX number Grid X-coordinate
 ---@field gridY number Grid Y-coordinate
