@@ -12,13 +12,18 @@ function Game.new()
   local self = setmetatable({}, Game)
   local width = love.graphics.getWidth()
   local height = love.graphics.getHeight()
+  local centerX = width / 2
   self.grid = Grid.new(width, height - 200, 10, 20)
   self.buttons = {}
-  local button = Button.new("Pathfinding", (width / 2) - 50, (height - 100), 100, 50, function()
+  local pathfindingButton = Button.new("Pathfinding", centerX, (height - 100), 180, 40, function()
     self:calculatePath()
   end)
+  table.insert(self.buttons, pathfindingButton)
 
-  table.insert(self.buttons, button)
+  local resetButton = Button.new("Reset", centerX, (height - 150), 180, 40, function()
+    self:resetTowers()
+  end)
+  table.insert(self.buttons, resetButton)
 
   return self
 end
@@ -43,7 +48,7 @@ function Game:mousepressed(x, y, mbutton)
     return
   end
 
-  self.grid:addTowerAt(x, y)
+  self.grid:addTowerAt(x, y, "fire")
 
   for _, button in ipairs(self.buttons) do
     if button:contains(x, y) then
@@ -53,7 +58,11 @@ function Game:mousepressed(x, y, mbutton)
 end
 
 function Game:calculatePath()
-  self.grid:getPath()
+  self.grid:getPath(1, 1, self.grid.numberOfColumns, self.grid.numberOfRows)
+end
+
+function Game:resetTowers()
+  self.grid:reset()
 end
 
 return Game

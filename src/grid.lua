@@ -1,17 +1,26 @@
 local Colors = require("src.ui.colors")
 local Coordinate = require("src.models.coordinate")
 local Tower = require("src.models.tower")
+local Path = require("src.models.path")
 
 local Jumper = {}
 Jumper.Grid = require("modules.jumper.grid")
 Jumper.Pathfinder = require("modules.jumper.pathfinder")
+
+local function isTower(object)
+  return getmetatable(object) == Tower
+end
+
+local function isPath(object)
+  return getmetatable(object) == Path
+end
 
 ---@class Grid
 ---@field width number
 ---@field height number
 ---@field numberOfRows number
 ---@field numberOfColumns number
----@field towers table<Coordinate, Tower>
+---@field objects table<Coordinate, Path|Tower>
 local Grid = {}
 Grid.__index = Grid
 
@@ -22,7 +31,7 @@ function Grid.new(width, height, numberOfRows, numberOfColumns)
   self.numberOfRows = numberOfRows
   self.numberOfColumns = numberOfColumns
 
-  self.towers = {}
+  self.objects = {}
   return self
 end
 
@@ -34,12 +43,16 @@ function Grid:draw()
 
   for row = 1, self.numberOfRows do
     for column = 1, self.numberOfColumns do
-      local tower = self:getTower(column, row)
-      if tower then
+      local object = self:getObject(column, row)
+
+      if object and isTower(object) then
         love.graphics.setColor(1, 0, 0)
+      elseif object and isPath(object) then
+        love.graphics.setColor(0, 1, 0)
       else
         love.graphics.setColor(Colors.gridItem)
       end
+
       local x = (column - 1) * gridItemWidth
       local y = (row - 1) * gridItemHeight
       love.graphics.rectangle("fill", x, y, gridItemWidth - 2, gridItemHeight - 2)
@@ -47,31 +60,65 @@ function Grid:draw()
   end
 end
 
--- class methods
+-- TOWER METHODS --
 
-function Grid:addTowerAt(x, y)
+---@param x number
+---@param y number
+---@param towerType TowerType
+function Grid:addTowerAt(x, y, towerType)
   local coordinate = self:coordinateFor(x, y)
-  local tower = Tower.new(coordinate, "fire")
-  self:addTower(tower)
+  local tower = {}
+
+  if towerType == "fire" then
+    tower = Tower.newFireTower(coordinate)
+  elseif towerType == "rocket" then
+    tower = Tower.newRocketTower(coordinate)
+  elseif towerType == "laser" then
+    tower = Tower.newLaserTower(coordinate)
+  else
+    error("Invalid tower type: " .. tostring(towerType))
+  end
+
+  self:addObject(tower)
 end
 
-function Grid:addTower(tower)
-  self.towers[tower.coordinate:key()] = tower
+---@param object Tower|Path
+function Grid:addObject(object)
+  self.objects[object.coordinate:key()] = object
 end
 
 ---@param column number
 ---@param row number
-function Grid:getTower(column, row)
+---@return Tower|Path
+function Grid:getObject(column, row)
   local coordinate = Coordinate.new(column, row)
-  return self.towers[coordinate:key()]
+  return self.objects[coordinate:key()]
 end
 
-function Grid:removeTower(towerToRemove)
-  for tower in self.towers do
-    if tower.coordinate == towerToRemove.coordinate then
-      table.remove(towerToRemove)
+---@param objectToRemove Tower|Path
+function Grid:remove(objectToRemove)
+  for tower in self.objects do
+    if tower.coordinate == objectToRemove.coordinate then
+      table.remove(objectToRemove)
       break
     end
+  end
+end
+
+-- PATH METHODS --
+
+---@param x number
+---@param y number
+function Grid:addPath(x, y)
+  local coordinate = self:coordinateFor(x, y)
+  local path = Path.new(coordinate)
+
+  self:addObject(path)
+end
+
+function Grid:reset()
+  for _, object in pairs(self.objects) do
+    self.objects[object.coordinate:key()] = nil
   end
 end
 
@@ -90,8 +137,8 @@ function Grid:asJumperGrid()
   for row = 1, self.numberOfRows do
     map[row] = {}
     for column = 1, self.numberOfColumns do
-      local tower = self:getTower(column, row)
-      if tower then
+      local object = self:getObject(column, row)
+      if object and isTower(object) then
         map[row][column] = 1 -- Not walkable
       else
         map[row][column] = 0 -- Walkable
@@ -102,22 +149,26 @@ function Grid:asJumperGrid()
   return map
 end
 
-function Grid:getPath()
+---@param startX number
+---@param startY number
+---@param endX number
+---@param endY number
+function Grid:getPath(startX, startY, endX, endY)
   local jumperGrid = self:asJumperGrid()
   local grid = Jumper.Grid(jumperGrid)
   local walkable = 0
-  local pathfinder = Jumper.Pathfinder(grid, "JPS", walkable)
-  local startX, startY = 1, 1
-  local endX, endY = self.numberOfColumns, self.numberOfRows
+  local pathfinder = Jumper.Pathfinder(grid, "ASTAR", walkable)
 
   local path = pathfinder:getPath(startX, startY, endX, endY)
+
   if path then
-    print(("Path found! Length: %.2f"):format(path:getLength()))
-    for node, count in path:nodes() do
-      print(("Step: %d - x: %d - y: %d"):format(count, node:getX(), node:getY()))
+    for node, _ in path:nodes() do
+      local x = node:getX()
+      local y = node:getY()
+      local coordinate = Coordinate.new(x, y)
+      local pathObject = Path.new(coordinate)
+      self:addObject(pathObject)
     end
-  else
-    print("No path found")
   end
 end
 

@@ -1,5 +1,3 @@
-local Coordinate = require("src.models.coordinate")
-
 ---@alias TowerType
 ---| "fire"
 ---| "laser"
@@ -38,6 +36,22 @@ function Tower:upgrade()
   else
     self.upgrade = "2"
   end
+end
+
+-- Constructors for different towers
+function Tower.newFireTower(coordinate)
+  local tower = Tower.new(coordinate, "fire")
+  return tower
+end
+
+function Tower.newRocketTower(coordinate)
+  local tower = Tower.new(coordinate, "fire")
+  return tower
+end
+
+function Tower.newLaserTower(coordinate)
+  local tower = Tower.new(coordinate, "laser")
+  return tower
 end
 
 return Tower
