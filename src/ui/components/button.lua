@@ -5,8 +5,8 @@ local Colors = require("ui.colors")
 
 --- @class Button
 --- @field text string
---- @field x number
---- @field y number
+--- @field centerX number
+--- @field centerY number
 --- @field width number
 --- @field height number
 --- @field action function
@@ -15,12 +15,12 @@ local Colors = require("ui.colors")
 --- @field onClick function
 --- @field private font love.Font
 --- @return Button
-function Button.new(text, x, y, width, height, action)
+function Button.new(text, centerX, centerY, width, height, action)
   local self = setmetatable({}, Button)
 
   self.text = text
-  self.x = x
-  self.y = y
+  self.x = centerX - (width / 2)
+  self.y = centerY - (height / 2)
   self.width = width
   self.height = height
   self.action = action

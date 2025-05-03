@@ -14,7 +14,7 @@ function MainMenu.new(startGameAction)
   local centerY = love.graphics.getHeight() / 2
 
   ---@type Button
-  local startGameButton = Button.new("Start Game", centerX - 90, centerY + 20, 180, 40, startGameAction)
+  local startGameButton = Button.new("Start Game", centerX, centerY, 180, 40, startGameAction)
   table.insert(self.buttons, startGameButton)
 
   return self
