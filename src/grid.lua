@@ -2,6 +2,10 @@ local Colors = require("src.ui.colors")
 local Coordinate = require("src.models.coordinate")
 local Tower = require("src.models.tower")
 
+local Jumper = {}
+Jumper.Grid = require("modules.jumper.grid")
+Jumper.Pathfinder = require("modules.jumper.pathfinder")
+
 ---@class Grid
 ---@field width number
 ---@field height number
@@ -78,6 +82,43 @@ function Grid:coordinateFor(x, y)
   local column = math.floor(x / gridItemWidth + 1)
   local row = math.floor(y / gridItemHeight + 1)
   return Coordinate.new(column, row)
+end
+
+function Grid:asJumperGrid()
+  local map = {}
+
+  for row = 1, self.numberOfRows do
+    map[row] = {}
+    for column = 1, self.numberOfColumns do
+      local tower = self:getTower(column, row)
+      if tower then
+        map[row][column] = 1 -- Not walkable
+      else
+        map[row][column] = 0 -- Walkable
+      end
+    end
+  end
+
+  return map
+end
+
+function Grid:getPath()
+  local jumperGrid = self:asJumperGrid()
+  local grid = Jumper.Grid(jumperGrid)
+  local walkable = 0
+  local pathfinder = Jumper.Pathfinder(grid, "JPS", walkable)
+  local startX, startY = 1, 1
+  local endX, endY = self.numberOfColumns, self.numberOfRows
+
+  local path = pathfinder:getPath(startX, startY, endX, endY)
+  if path then
+    print(("Path found! Length: %.2f"):format(path:getLength()))
+    for node, count in path:nodes() do
+      print(("Step: %d - x: %d - y: %d"):format(count, node:getX(), node:getY()))
+    end
+  else
+    print("No path found")
+  end
 end
 
 return Grid
