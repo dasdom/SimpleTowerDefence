@@ -1,6 +1,6 @@
-local Colors = require("ui.colors")
-local Coordinate = require("coordinate")
-local Tower = require("tower")
+local Colors = require("src.ui.colors")
+local Coordinate = require("src.models.coordinate")
+local Tower = require("src.models.tower")
 
 ---@class Grid
 ---@field width number

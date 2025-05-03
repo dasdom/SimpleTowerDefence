@@ -1,4 +1,4 @@
-local Coordinate = require("coordinate")
+local Coordinate = require("src.models.coordinate")
 
 ---@alias TowerType
 ---| "fire"
@@ -21,20 +21,23 @@ local Coordinate = require("coordinate")
 local Tower = {}
 Tower.__index = Tower
 
+---@param coordinate Coordinate
+---@param towerType TowerType
+---@return Tower
 function Tower.new(coordinate, towerType)
-    local self = setmetatable({}, Tower)
-    self.coordinate = coordinate
-    self.towerType = towerType
-    self.upgradeStatus = "0"
-    return self 
+  local self = setmetatable({}, Tower)
+  self.coordinate = coordinate
+  self.towerType = towerType
+  self.upgradeStatus = "0"
+  return self
 end
 
 function Tower:upgrade()
-    if self.upgrade == "0" then
-        self.upgrade = "1"
-    else 
-        self.upgrade = "2"
-    end
+  if self.upgrade == "0" then
+    self.upgrade = "1"
+  else
+    self.upgrade = "2"
+  end
 end
 
 return Tower

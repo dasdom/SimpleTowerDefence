@@ -9,8 +9,8 @@ STATES = {
 }
 
 -- Modules
-local Game = require("game")
-local MainMenu = require("main_menu")
+local Game = require("src.game")
+local MainMenu = require("src.main_menu")
 
 -- Local Properties
 local game = {}

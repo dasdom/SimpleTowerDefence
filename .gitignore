@@ -50,3 +50,7 @@ config.lua.local
 saves/
 build/
 dist/
+/luarocks
+/lua
+/lua_modules
+/.luarocks
