@@ -158,6 +158,7 @@ function Grid:getPath(startX, startY, endX, endY)
   local grid = Jumper.Grid(jumperGrid)
   local walkable = 0
   local pathfinder = Jumper.Pathfinder(grid, "ASTAR", walkable)
+  pathfinder:setMode("ORTHOGONAL")
 
   local path = pathfinder:getPath(startX, startY, endX, endY)
 
