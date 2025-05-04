@@ -13,7 +13,7 @@ function Game.new()
   local width = love.graphics.getWidth()
   local height = love.graphics.getHeight()
   local centerX = width / 2
-  self.grid = Grid.new(width, height - 200, 10, 20)
+  self.grid = Grid.new(width, height - 200, 10, 20, 1, 1, 20, 10)
   self.buttons = {}
   local pathfindingButton = Button.new("Pathfinding", centerX, (height - 100), 180, 40, function()
     self:calculatePath()
@@ -58,7 +58,7 @@ function Game:mousepressed(x, y, mbutton)
 end
 
 function Game:calculatePath()
-  self.grid:getPath(1, 1, self.grid.numberOfColumns, self.grid.numberOfRows)
+  self.grid:getPath(true)
 end
 
 function Game:resetTowers()

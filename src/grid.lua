@@ -20,16 +20,24 @@ end
 ---@field height number
 ---@field numberOfRows number
 ---@field numberOfColumns number
+---@field startX number
+---@param startY number
+---@param endX number
+---@param endY number
 ---@field objects table<Coordinate, Path|Tower>
 local Grid = {}
 Grid.__index = Grid
 
-function Grid.new(width, height, numberOfRows, numberOfColumns)
+function Grid.new(width, height, numberOfRows, numberOfColumns, startX, startY, endX, endY)
   local self = setmetatable({}, Grid)
   self.width = width
   self.height = height
   self.numberOfRows = numberOfRows
   self.numberOfColumns = numberOfColumns
+  self.startX = startX
+  self.startY = startY
+  self.endX = endX
+  self.endY = endY
 
   self.objects = {}
   return self
@@ -80,6 +88,11 @@ function Grid:addTowerAt(x, y, towerType)
   end
 
   self:addObject(tower)
+
+  local path = self:getPath(false)
+  if nil == path then
+    self:remove(tower)
+  end
 end
 
 ---@param object Tower|Path
@@ -97,9 +110,10 @@ end
 
 ---@param objectToRemove Tower|Path
 function Grid:remove(objectToRemove)
-  for tower in self.objects do
+  for _, tower in pairs(self.objects) do
     if tower.coordinate == objectToRemove.coordinate then
-      table.remove(objectToRemove)
+      print("removing object at ", tower.coordinate.gridX, tower.coordinate.gridY)
+      self.objects[tower.coordinate:key()] = nil
       break
     end
   end
@@ -153,15 +167,24 @@ end
 ---@param startY number
 ---@param endX number
 ---@param endY number
-function Grid:getPath(startX, startY, endX, endY)
+---@param add bool
+function Grid:getPath(add)
   local jumperGrid = self:asJumperGrid()
   local grid = Jumper.Grid(jumperGrid)
   local walkable = 0
   local pathfinder = Jumper.Pathfinder(grid, "ASTAR", walkable)
   pathfinder:setMode("ORTHOGONAL")
 
-  local path = pathfinder:getPath(startX, startY, endX, endY)
+  local path = pathfinder:getPath(self.startX, self.startY, self.endX, self.endY)
 
+  if add then 
+    self:addPath(path)
+  end
+
+  return path
+end
+
+function Grid:addPath(path)
   if path then
     for node, _ in path:nodes() do
       local x = node:getX()
