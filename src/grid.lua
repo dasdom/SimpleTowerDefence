@@ -1,18 +1,15 @@
 local Colors = require("src.ui.colors")
 local Coordinate = require("src.models.coordinate")
 local Tower = require("src.models.tower")
-local Path = require("src.models.path")
-
-local Jumper = {}
-Jumper.Grid = require("modules.jumper.grid")
-Jumper.Pathfinder = require("modules.jumper.pathfinder")
+local PathElement = require("src.models.pathelement")
+local PathFinding = require("src.pathfinding")
 
 local function isTower(object)
   return getmetatable(object) == Tower
 end
 
-local function isPath(object)
-  return getmetatable(object) == Path
+function isPathElement(object)
+  return getmetatable(object) == PathElement
 end
 
 ---@class Grid
@@ -21,10 +18,11 @@ end
 ---@field numberOfRows number
 ---@field numberOfColumns number
 ---@field startX number
----@param startY number
----@param endX number
----@param endY number
----@field objects table<Coordinate, Path|Tower>
+---@field startY number
+---@field endX number
+---@field endY number
+---@field objects table<Coordinate, PathElement|Tower>
+---@field path table<Coordinate, PathElement>
 local Grid = {}
 Grid.__index = Grid
 
@@ -38,8 +36,10 @@ function Grid.new(width, height, numberOfRows, numberOfColumns, startX, startY, 
   self.startY = startY
   self.endX = endX
   self.endY = endY
-
   self.objects = {}
+
+  PathFinding.grid = self
+
   return self
 end
 
@@ -55,7 +55,7 @@ function Grid:draw()
 
       if object and isTower(object) then
         love.graphics.setColor(1, 0, 0)
-      elseif object and isPath(object) then
+      elseif object and isPathElement(object) then
         love.graphics.setColor(0, 1, 0)
       else
         love.graphics.setColor(Colors.gridItem)
@@ -73,8 +73,9 @@ end
 ---@param x number
 ---@param y number
 ---@param towerType TowerType
-function Grid:addTowerAt(x, y, towerType)
-  local coordinate = self:coordinateFor(x, y)
+---@param enemies Enemy[]
+function Grid:addTowerAt(x, y, towerType, enemies)
+  local coordinate = Coordinate.new(x, y)
   local tower = {}
 
   if towerType == "fire" then
@@ -88,31 +89,56 @@ function Grid:addTowerAt(x, y, towerType)
   end
 
   self:addObject(tower)
+  PathFinding.updateJumperGrid()
 
-  local path = self:getPath(false)
-  if nil == path then
-    self:remove(tower)
+  if #enemies == 0 then
+    local path = PathFinding.getPath(self.startX, self.startY, self.endX, self.endY)
+    if not path then
+      self:remove(tower)
+    end
+  end
+
+  for _, enemy in ipairs(enemies) do
+    local enemyCoordinate = self:coordinateFor(enemy.positionX, enemy.positionY)
+    if not enemyCoordinate then
+      return
+    end
+
+    local path = PathFinding.getPath(enemyCoordinate.gridX, enemyCoordinate.gridY, self.endX, self.endY)
+    if not path then
+      self:remove(tower)
+      return
+    else
+      local pathElements = {}
+
+      for node, _ in path:nodes() do
+        local coord = Coordinate.new(node:getX(), node:getY())
+        local pathElement = PathElement.new(coord)
+        table.insert(pathElements, pathElement)
+      end
+
+      enemy.pathElements = pathElements
+    end
   end
 end
 
----@param object Tower|Path
+---@param object Tower|PathElement
 function Grid:addObject(object)
   self.objects[object.coordinate:key()] = object
 end
 
 ---@param column number
 ---@param row number
----@return Tower|Path
+---@return Tower|PathElement
 function Grid:getObject(column, row)
   local coordinate = Coordinate.new(column, row)
   return self.objects[coordinate:key()]
 end
 
----@param objectToRemove Tower|Path
+---@param objectToRemove Tower|PathElement
 function Grid:remove(objectToRemove)
   for _, tower in pairs(self.objects) do
     if tower.coordinate == objectToRemove.coordinate then
-      print("removing object at ", tower.coordinate.gridX, tower.coordinate.gridY)
       self.objects[tower.coordinate:key()] = nil
       break
     end
@@ -121,15 +147,6 @@ end
 
 -- PATH METHODS --
 
----@param x number
----@param y number
-function Grid:addPath(x, y)
-  local coordinate = self:coordinateFor(x, y)
-  local path = Path.new(coordinate)
-
-  self:addObject(path)
-end
-
 function Grid:reset()
   for _, object in pairs(self.objects) do
     self.objects[object.coordinate:key()] = nil
@@ -137,6 +154,11 @@ function Grid:reset()
 end
 
 function Grid:coordinateFor(x, y)
+  -- Check if the coordinates are within the grid bounds
+  if x < 0 or y < 0 or x > self.width or y > self.height then
+    return nil
+  end
+
   local gridItemWidth = self.width / self.numberOfColumns
   local gridItemHeight = self.height / self.numberOfRows
 
@@ -145,55 +167,40 @@ function Grid:coordinateFor(x, y)
   return Coordinate.new(column, row)
 end
 
-function Grid:asJumperGrid()
-  local map = {}
-
-  for row = 1, self.numberOfRows do
-    map[row] = {}
-    for column = 1, self.numberOfColumns do
-      local object = self:getObject(column, row)
-      if object and isTower(object) then
-        map[row][column] = 1 -- Not walkable
-      else
-        map[row][column] = 0 -- Walkable
-      end
-    end
-  end
-
-  return map
-end
-
----@param startX number
----@param startY number
----@param endX number
----@param endY number
----@param add bool
-function Grid:getPath(add)
-  local jumperGrid = self:asJumperGrid()
-  local grid = Jumper.Grid(jumperGrid)
-  local walkable = 0
-  local pathfinder = Jumper.Pathfinder(grid, "ASTAR", walkable)
-  pathfinder:setMode("ORTHOGONAL")
-
-  local path = pathfinder:getPath(self.startX, self.startY, self.endX, self.endY)
-
-  if add then 
-    self:addPath(path)
-  end
-
-  return path
-end
-
 function Grid:addPath(path)
   if path then
     for node, _ in path:nodes() do
       local x = node:getX()
       local y = node:getY()
       local coordinate = Coordinate.new(x, y)
-      local pathObject = Path.new(coordinate)
+      local pathObject = PathElement.new(coordinate)
       self:addObject(pathObject)
     end
+
+    self.path = {}
+    for _, object in pairs(self.objects) do
+      if isPathElement(object) then
+        local coordinate = object.coordinate
+        local pathObject = PathElement.new(coordinate)
+        table.insert(coordinate, pathObject)
+      end
+    end
   end
+end
+
+---@param x number
+---@param y number
+---@return number, number
+function Grid:getCenterForCoordinateAt(x, y)
+  local coordinate = Coordinate.new(x, y)
+
+  local gridItemWidth = self.width / self.numberOfColumns
+  local gridItemHeight = self.height / self.numberOfRows
+
+  local newX = (coordinate.gridX - 1) * gridItemWidth + gridItemWidth / 2
+  local newY = (coordinate.gridY - 1) * gridItemHeight + gridItemHeight / 2
+
+  return newX, newY
 end
 
 return Grid
