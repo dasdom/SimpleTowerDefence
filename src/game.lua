@@ -52,11 +52,33 @@ function Game:update(dt)
       enemy.currentPathIndex = 1
     end
 
-    local currentPathElement = enemy.pathElements[enemy.currentPathIndex]
-    local nextPathElement = enemy.pathElements[enemy.currentPathIndex + 1]
+    if enemy.shouldUpdatePath then
+      local currentCoordinate = self.grid:coordinateFor(enemy.positionX, enemy.positionY)
+      if not currentCoordinate then
+        error("No coordinate found for enemy position")
+      end
+      local path = PathFinding.getPath(currentCoordinate.gridX, currentCoordinate.gridY, self.grid.endX, self.grid.endY)
+      if path then
+        local pathElements = {}
+        for node, _ in path:nodes() do
+          local coord = Coordinate.new(node:getX(), node:getY())
+          local pathElement = PathElement.new(coord)
+          table.insert(pathElements, pathElement)
+        end
+        enemy.pathElements = pathElements
+      end
+      enemy.currentPathIndex = 1
+      enemy.shouldUpdatePath = false
+    end
 
-    local nextCenterX, nextCenterY =
-      self.grid:getCenterForCoordinateAt(nextPathElement.coordinate.gridX, nextPathElement.coordinate.gridY)
+    local currentPathElement = enemy.pathElements[enemy.currentPathIndex].coordinate
+    local nextPathElement = enemy.pathElements[enemy.currentPathIndex + 1].coordinate
+
+    if not nextPathElement then
+      print("enemy reached end")
+      table.insert(enemiesToRemove, idx)
+    end
+    local nextCenterX, nextCenterY = self.grid:getCenterForCoordinateAt(nextPathElement.gridX, nextPathElement.gridY)
 
     if enemy.positionX < nextCenterX then
       enemy.positionX = enemy.positionX + 1
@@ -74,7 +96,7 @@ function Game:update(dt)
     if not newCurrentCoordinate then
       error("No coordinate found for enemy position")
     end
-    if currentPathElement.coordinate:key() ~= newCurrentCoordinate:key() then
+    if currentPathElement:key() ~= newCurrentCoordinate:key() then
       if #enemy.pathElements > (enemy.currentPathIndex + 1) then
         enemy.currentPathIndex = enemy.currentPathIndex + 1
       else

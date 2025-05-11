@@ -6,6 +6,7 @@
 ---@field positionX number
 ---@field positionY number
 ---@field pathElements PathElement[]
+---@field shouldUpdatePath boolean
 ---@field currentPathIndex number
 ---@field nextPathIndex number
 local Enemy = {}
@@ -28,6 +29,7 @@ function Enemy.new(name, health, armor, speed, positionX, positionY)
   self.speed = speed
   self.positionX = positionX
   self.positionY = positionY
+  self.shouldUpdatePath = false
 
   self.pathElements = {}
   self.currentPathIndex = nil

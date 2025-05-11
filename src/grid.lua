@@ -107,17 +107,10 @@ function Grid:addTowerAt(x, y, towerType, enemies)
     local path = PathFinding.getPath(enemyCoordinate.gridX, enemyCoordinate.gridY, self.endX, self.endY)
     if not path then
       self:remove(tower)
+      enemy.shouldUpdatePath = false
       return
     else
-      local pathElements = {}
-
-      for node, _ in path:nodes() do
-        local coord = Coordinate.new(node:getX(), node:getY())
-        local pathElement = PathElement.new(coord)
-        table.insert(pathElements, pathElement)
-      end
-
-      enemy.pathElements = pathElements
+      enemy.shouldUpdatePath = true
     end
   end
 end
