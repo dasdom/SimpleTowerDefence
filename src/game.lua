@@ -75,21 +75,20 @@ function Game:update(dt)
     local nextPathElement = enemy.pathElements[enemy.currentPathIndex + 1].coordinate
 
     if not nextPathElement then
-      print("enemy reached end")
       table.insert(enemiesToRemove, idx)
     end
     local nextCenterX, nextCenterY = self.grid:getCenterForCoordinateAt(nextPathElement.gridX, nextPathElement.gridY)
 
     if enemy.positionX < nextCenterX then
-      enemy.positionX = enemy.positionX + 1
+      enemy.positionX = enemy.positionX + 0.1
     elseif enemy.positionX > nextCenterX then
-      enemy.positionX = enemy.positionX - 1
+      enemy.positionX = enemy.positionX - 0.1
     end
 
     if enemy.positionY < nextCenterY then
-      enemy.positionY = enemy.positionY + 1
+      enemy.positionY = enemy.positionY + 0.1
     elseif enemy.positionY > nextCenterY then
-      enemy.positionY = enemy.positionY - 1
+      enemy.positionY = enemy.positionY - 0.1
     end
 
     local newCurrentCoordinate = self.grid:coordinateFor(enemy.positionX, enemy.positionY)

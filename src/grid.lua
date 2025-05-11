@@ -88,14 +88,10 @@ function Grid:addTowerAt(x, y, towerType, enemies)
     error("Invalid tower type: " .. tostring(towerType))
   end
 
-  self:addObject(tower)
-  PathFinding.updateJumperGrid()
-
-  if #enemies == 0 then
-    local path = PathFinding.getPath(self.startX, self.startY, self.endX, self.endY)
-    if not path then
-      self:remove(tower)
-    end
+  -- check if the tower can be placed
+  local path = PathFinding.getPathWithGrid(self, tower, self.startX, self.startY, self.endX, self.endY)
+  if not path then
+    return
   end
 
   for _, enemy in ipairs(enemies) do
@@ -104,20 +100,28 @@ function Grid:addTowerAt(x, y, towerType, enemies)
       return
     end
 
-    local path = PathFinding.getPath(enemyCoordinate.gridX, enemyCoordinate.gridY, self.endX, self.endY)
-    if not path then
-      self:remove(tower)
+    -- early return if the enemy is on the new tower's coordinate
+    if enemyCoordinate:key() == coordinate:key() then
+      return
+    end
+
+    local enemyPath = PathFinding.getPath(enemyCoordinate.gridX, enemyCoordinate.gridY, self.endX, self.endY)
+    if not enemyPath then
       enemy.shouldUpdatePath = false
       return
     else
+      -- return, if the enemy cannot find a way
       enemy.shouldUpdatePath = true
     end
   end
+
+  self:addObject(tower)
 end
 
 ---@param object Tower|PathElement
 function Grid:addObject(object)
   self.objects[object.coordinate:key()] = object
+  PathFinding.updateJumperGrid()
 end
 
 ---@param column number
